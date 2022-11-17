@@ -1,0 +1,135 @@
+<?php 
+  $servername = 'localhost';
+  $username = 'root';
+  $password = '';
+  $database = 'notes';
+
+  $conn = mysqli_connect($servername, $username, $password, $database);
+
+  if(!$conn){
+    die("Sorry! we failed to connect: ". mysqli_connect_error());
+  } 
+
+  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
+
+    if(isset($_POST['snoEdit'])){
+      $sno = $_POST['snoEdit'];
+      $title = $_POST['titleEdit'];
+      $description = $_POST['descriptionEdit'];
+      $sql = "UPDATE `notes` SET `title` = '$title', `description` = '$description' WHERE `notes`.`sno` = $sno";
+      $result = mysqli_query($conn, $sql);
+      if($result){
+        echo "The record has been inserted successfully...<br>";
+      } else {
+        echo "Error ==>> " . mysqli_error($conn);
+      }
+    }
+    else {   
+      $title = $_POST['title'];
+      $description = $_POST['description'];
+      $sql = "INSERT INTO `notes` (`title`, `description`) VALUES ('$title', '$description')";
+      $result = mysqli_query($conn, $sql);
+      
+      if($result){
+        echo "The record has been inserted successfully...<br>";
+      } else {
+        echo "Error ==>> " . mysqli_error($conn);
+      }
+    } 
+  }
+
+  if(isset($_GET['delete'])){
+    $sno = $_GET['delete'];
+    $sql = "DELETE FROM `notes` WHERE `notes`.`sno` = $sno";
+    $result = mysqli_query($conn, $sql);
+  }
+?>
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <link href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" rel="stylesheet" >  <!--  for data table -->
+  </head>
+
+  <body style="background-color:black;">
+
+    <div >
+		<br><br>
+        <h2 style="color:white">Add a Note</h2><br>
+        <form action="/crud/index.php" method="post" class="row g-3 w-50">
+            <div>
+                <label for="formGroupExampleInput" class="form-label" style="color:white">Note Title</label>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;
+                <input type="text" class="" id="title" name="title" size="50">
+            </div><br><br>
+            <div>
+                <label for="exampleFormControlTextarea1" class="form-label" style="color:white">Note Description</label>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <textarea id="description" name="description" rows="3" cols="50"></textarea>
+            </div>
+            <div><br>
+                <button type="submit" class="btn btn-secondary" >Add Note</button>
+            </div> 
+        </form>
+    </div>
+
+    <div>
+
+      <table>
+        <thead>
+          <tr><br><br>
+            <th scope="col" style="color:white">S.no&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+            <th scope="col" style="color:white">Title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+            <th scope="col" style="color:white">Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+            <th scope="col" style="color:white">Actions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php 
+            $sql = "SELECT * FROM `notes`";
+            $result = mysqli_query($conn, $sql);
+            $sno = 0;
+            while($row = mysqli_fetch_assoc($result)){
+              // echo $var_dump($row);
+              $sno += 1;
+              echo "<tr>
+                      <th scope='row' style='color:white'> ". $sno ." </th>
+                      <td style='color:white'> ". $row['title'] ." </td>
+                      <td style='color:white'> ". $row['description'] ." </td>
+                      <td style='color:white'>  <button class='delete btn btn-sm btn-primary' id=d".$row['sno']." >Delete</button> </td>
+                    </tr>";
+            }
+          ?>
+        </tbody>
+      </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+    <script src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>  
+    <script>
+      $(document).ready( function () {
+        $('#myTable').DataTable();
+      } );  
+    </script>
+    <script>
+      deletes = document.getElementsByClassName('delete');
+      Array.from(deletes).forEach((element) => {
+        element.addEventListener("click", (e)=> {
+          sno = e.target.id.substr(1,);
+
+          if(confirm("Are you Sure You want to delete this note!")){
+            window.location = `/crud/index.php?delete=${sno}`;
+          }
+          else {
+            console.log("NO");
+          }
+        })
+      })
+    </script>
+  </body>
+</html>
